@@ -3,7 +3,8 @@ import sys
 from random import randint
 import os
 import csv
-
+from sina import sina_spider
+import time
 
 ########首先定义各个颜色的RBG的数值#########
 
@@ -362,104 +363,122 @@ def make_bold(surface, tsur, rect):
 
 
 
+def data_visulization():
+    # 文件路径：E:\PycharmProjects\ranking_visualization\example.csv
+    # path = input('输入文件路径及文件名:\n')
+    # path = 'E:\PycharmProjects\\ranking_visualization\example.csv'
+    # path = 'E:\PycharmProjects\DataVisualization\sina.csv'
+    #
+    # while not os.path.exists(path):
+    #     print('路径错误')
+    #     path = input('请重新输入正确的文件路径及文件名')
+    #
+    # with open(path) as f:
+    #     data = list(csv.reader(f))
 
-#文件路径：E:\PycharmProjects\ranking_visualization\example.csv
-# path = input('输入文件路径及文件名:\n')
-# path = 'E:\PycharmProjects\\ranking_visualization\example.csv'
-path = 'E:\PycharmProjects\DataVisualization\sina.csv'
+
+    while True:
+        time.sleep(20)
+        data = sina_spider()
+        spider_flag = True
+        ranks = {}
+        for each in data:
+            date = each[3]
+            if date in ranks:
+                ranks[date].append({'name': each[0], 'type': each[1], 'value': int(each[2])})
+            else:
+                ranks[date] = [{'name': each[0], 'type': each[1], 'value': int(each[2])}]
+
+        data = ranks
+
+        store = bar_list([])
+        # 按照日期对数据进行排序
+        data_date = list(data)
+        index = 0
+        max_index = len(data_date)
+
+        frame = -1
+        temp = sorted(data[data_date[0]], key=lambda x: x['value'], reverse=True)
+        # print(data)
+        lastmaxv = temp[0]['value']
+        store.update(data[data_date[0]], lastmaxv)
+        top1 = 0
+        lasttop1 = ''
+
+        pygame.init()
+        screen = pygame.display.set_mode((1280, 720))
+        clock = pygame.time.Clock()
+        while spider_flag:
+            for event in pygame.event.get():
+                if event.type == 'QUIT':
+                    pygame.quit()
+                    sys.exit()
+
+            if index == -1:
+                clock.tick(30)
+                continue
+
+            screen.fill(WHITE)
+
+            frame += 1
+            if frame == DATE_INTERVAL + 1 and index != -1:
+                frame = 0
+                index += 1
+
+            if frame == 0:
+                top1 += 1
+                # store.update(data[data_date[index]], store.data[0].value)
+
+                if index == max_index:
+                    store.update(data[data_date[max_index - 1]], store.data[0].value)
+                else:
+                    store.update(data[data_date[index]], store.data[0].value)
+
+            maxv = store.data[0].value
+            maxv = int(lastmaxv + (maxv - lastmaxv) * (frame / DATE_INTERVAL))
+            if frame == 30:
+                lastmaxv = store.data[0].value
+            temp = axis(maxv, 10)
+            axistemp = temp.get_rect()
+            axistemp.left, axistemp.top = 150, 80
+            axistemp = axistemp.right, axistemp.bottom
+            screen.blit(temp, (150, 80))
+
+            if lasttop1 != store.data[0].name:
+                lasttop1 = store.data[0].name
+                top1 = 0
+            ttpye, tname = store.data[0].type, lasttop1
+            temp = top_bar(ttpye, tname, top1)
+            screen.blit(temp, (150, 0))
+
+            # temp = bottom_date(data_date[index])
+            if index == max_index:
+                temp = bottom_date(data_date[max_index - 1])
+            else:
+                temp = bottom_date(data_date[index])
+            temp_r = temp.get_rect()
+            temp_r.center = axistemp[0] - 35, 0
+            temp_r.bottom = axistemp[1] - 30
+            screen.blit(temp, temp_r)
+
+            if index == max_index:
+                bar_graph(screen, (175, 80), data[data_date[max_index - 1]], -1)
+                index = 0
+                spider_flag = False
+            else:
+                bar_graph(screen, (175, 80), data[data_date[index]], frame)
+            # bar_graph(screen, (175, 80), data[data_date[index]], frame)
+
+            pygame.display.flip()
+            clock.tick(30)
 
 
-while not os.path.exists(path):
-    print('路径错误')
-    path = input('请重新输入正确的文件路径及文件名')
 
-with open(path) as f:
-    data = list(csv.reader(f))
 
-ranks = {}
-
-for each in data:
-    date = each[3]
-    if date in ranks:
-        ranks[date].append({'name': each[0], 'type': each[1], 'value': int(each[2])})
-    else:
-        ranks[date] = [{'name': each[0], 'type': each[1], 'value': int(each[2])}]
-
-data = ranks
-pygame.init()
-screen = pygame.display.set_mode((1280, 720))
-clock = pygame.time.Clock()
 
 store = bar_list([])
-#按照日期对数据进行排序
-data_date = sorted(list(data))
-index = 0
-max_index = len(data_date)
-
-fadev = 0
 lastk = None
-frame = -1
-temp = sorted(data[data_date[0]], key=lambda x: x['value'], reverse=True)
-lastmaxv = temp[0]['value']
-store.update(data[data_date[0]], lastmaxv)
-top1 = 0
-lasttop1 = ''
+fadev = 0
 
-while True:
-    for event in pygame.event.get():
-        if event.type == 'QUIT':
-            pygame.quit()
-            sys.exit()
-
-    if index == -1:
-        clock.tick(30)
-        continue
-
-    screen.fill(WHITE)
-
-    frame += 1
-    if frame == DATE_INTERVAL + 1 and index != -1:
-        frame = 0
-        index += 1
-
-    if frame == 0:
-        top1 += 1
-        if index == max_index:
-            store.update(data[data_date[max_index-1]], store.data[0].value)
-        else:
-            store.update(data[data_date[index]], store.data[0].value)
-
-    maxv = store.data[0].value
-    maxv = int(lastmaxv + (maxv - lastmaxv)*(frame/DATE_INTERVAL))
-    if frame == 30:
-        lastmaxv = store.data[0].value
-    temp = axis(maxv, 10)
-    axistemp = temp.get_rect()
-    axistemp.left, axistemp.top = 150, 80
-    axistemp = axistemp.right, axistemp.bottom
-    screen.blit(temp, (150, 80))
-
-    if lasttop1 != store.data[0].name:
-        lasttop1 = store.data[0].name
-        top1 = 0
-    ttpye, tname = store.data[0].type, lasttop1
-    temp = top_bar(ttpye, tname, top1)
-    screen.blit(temp, (150, 0))
-
-    if index == max_index:
-        temp = bottom_date(data_date[max_index-1])
-    else:
-        temp = bottom_date(data_date[index])
-    temp_r = temp.get_rect()
-    temp_r.center = axistemp[0] - 35, 0
-    temp_r.bottom = axistemp[1] - 30
-    screen.blit(temp, temp_r)
-
-    if index == max_index:
-        bar_graph(screen, (175, 80), data[data_date[max_index-1]], -1)
-        index = -1
-    else:
-        bar_graph(screen, (175, 80), data[data_date[index]], frame)
-
-    pygame.display.flip()
-    clock.tick(30)
+if __name__ == '__main__':
+    data_visulization()
