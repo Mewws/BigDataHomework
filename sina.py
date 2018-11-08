@@ -26,6 +26,7 @@ def sina_spider():
     base_url = 'https://s.weibo.com/top/summary?cate=realtimehot'
     response = requests.get(url=base_url)
     response_tree = etree.HTML(response.text)
+    spider_data_set = []
     # print(response.text)
     for i in range(1, 50):
         name = response_tree.xpath('//*[@id="pl_top_realtimehot"]/table/tbody/tr['+str(i+1)+']/td[1]/text()')
@@ -33,7 +34,11 @@ def sina_spider():
         value = response_tree.xpath('//*[@id="pl_top_realtimehot"]/table/tbody/tr['+str(i+1)+']/td[2]/span/text()')
         date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         item = Item(str(itype), str(itype), str(value), date)
-        item.store_2_csv('sina.csv')
+        spider_data_set.append(Item)
+
+    return spider_data_set
+
+        # item.store_2_csv('sina.csv')
         # print(type(itype))
         # print(item.name)
         # print(item.itype)
