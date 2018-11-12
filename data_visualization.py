@@ -458,10 +458,10 @@ def data_visulization():
                     # data += sina_spider()
                     store.update(data[data_date[index-1]], store.data[0].value)
                 else:
-                    print('数据长度：')
-                    print(len(data))
-                    print('索引值：')
-                    print(index)
+                    # print('数据长度：')
+                    # print(len(data))
+                    # print('索引值：')
+                    # print(index)
                     # print(spider_flag)
                     store.update(data[data_date[index]], store.data[0].value)
 
