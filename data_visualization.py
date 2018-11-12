@@ -385,13 +385,14 @@ def data_visulization():
     # data.insert(sina_spider())
     # data[0] = sina_spider()
     spider_flag = True
-    data = sina_spider()
+    tmp_data = sina_spider()
     while True:
         # if not spider_flag:
         #     data.remove(0)
         # time.sleep(10)
-        data = sina_spider()
-        data += sina_spider()
+        data = tmp_data
+        tmp_data = sina_spider()
+        data += tmp_data
         # data.append(sina_spider())
         spider_flag = True
         ranks = {}
@@ -428,7 +429,7 @@ def data_visulization():
         lastmaxv = data[data_date[0]][0]['value']
         # print(lastmaxv)
         store.update(data[data_date[0]], lastmaxv)
-        top1 = 0
+        top1 = '未完成'
         lasttop1 = ''
 
 
@@ -450,10 +451,11 @@ def data_visulization():
                 index += 1
 
             if frame == 0:
-                top1 += 1
+                # top1 += 1
                 # store.update(data[data_date[index]], store.data[0].value)
 
                 if index == max_index:
+                    # data += sina_spider()
                     store.update(data[data_date[index-1]], store.data[0].value)
                 else:
                     print('数据长度：')
