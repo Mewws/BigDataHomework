@@ -418,7 +418,6 @@ def data_visulization():
         # print(data_date)
         index = 0
         max_index = len(data)
-        # max_index = 99999
 
         fadev = 0
         lastk = None
