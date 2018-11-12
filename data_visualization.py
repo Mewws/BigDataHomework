@@ -5,6 +5,7 @@ import os
 import csv
 from sina import sina_spider
 import time
+import queue
 
 ########首先定义各个颜色的RBG的数值#########
 
@@ -73,9 +74,9 @@ class bar:
         self.color = HSV2RGB(randint(0, 255), 0.75, 230)
         self.lastwidth = 0      #上一次的宽度，实际上与lastvalue相关
         #m初始化的时候并不进行显示，update操作才对数据进行显示
-        self.rank = TOP_NUM + 1
+        self.rank = TOP_NUM
         #上一次的排名，方便进行比较，对数据显示进行相关的修改
-        self.lastrank = TOP_NUM + 1
+        self.lastrank = TOP_NUM
     '''
         获取柱条的位置
         位置信息有：顶端位置、宽度、数值、透明度、是否显示
@@ -322,6 +323,8 @@ def bar_graph(surface, pos, data, step):
     global store
     for each in store.data:
         top, width, value, alpha, show = each.get_pos(step, store.data[0].value)
+        # print('测试点1：')
+        # print(show)
         if show:
             '''
                 原型：pygame.draw.rect(Surface, color, Rect, width=0): return Rect
@@ -330,6 +333,7 @@ def bar_graph(surface, pos, data, step):
                 第二个元组 (width, height)表示的是矩形的宽度和高度。width表示线条的粗细，单位为像素；默认值为0，表示填充矩形内部。
                 此外，Surface.fill 同样可以用来绘制填充矩形。
             '''
+            # print('show show')
             pygame.draw.rect(surface, each.color, (pos[0]+1, pos[1]+top-30, width, BAR_HEIGHT))
             # pygame.font.Font.render()  ——  在一个新 Surface 对象上绘制文本
             tsur = font.render(each.name, True, each.color)
@@ -376,12 +380,24 @@ def data_visulization():
     # with open(path) as f:
     #     data = list(csv.reader(f))
 
-
+    # data = sina_spider()
+    # data = [[], []]
+    # data.insert(sina_spider())
+    # data[0] = sina_spider()
+    spider_flag = True
+    data = sina_spider()
     while True:
-        time.sleep(20)
+        # if not spider_flag:
+        #     data.remove(0)
+        # time.sleep(10)
         data = sina_spider()
+        data += sina_spider()
+        # data.append(sina_spider())
         spider_flag = True
         ranks = {}
+        # for i in range(0, 2):
+        #     print('i = ', end='')
+        #     print(i)
         for each in data:
             date = each[3]
             if date in ranks:
@@ -391,23 +407,32 @@ def data_visulization():
 
         data = ranks
 
-        store = bar_list([])
+        pygame.init()
+        screen = pygame.display.set_mode((1280, 720))
+        clock = pygame.time.Clock()
+
+        # store = bar_list([])
         # 按照日期对数据进行排序
         data_date = list(data)
-        index = 0
-        max_index = len(data_date)
-
-        frame = -1
-        temp = sorted(data[data_date[0]], key=lambda x: x['value'], reverse=True)
         # print(data)
-        lastmaxv = temp[0]['value']
+        # print(data_date)
+        index = 0
+        max_index = len(data)
+        # max_index = 99999
+
+        fadev = 0
+        lastk = None
+        frame = -1
+        # temp = sorted(data[data_date[0]], key=lambda x: x['value'], reverse=True)
+        # print(data)
+        # lastmaxv = temp[0]['value']
+        lastmaxv = data[data_date[0]][0]['value']
+        # print(lastmaxv)
         store.update(data[data_date[0]], lastmaxv)
         top1 = 0
         lasttop1 = ''
 
-        pygame.init()
-        screen = pygame.display.set_mode((1280, 720))
-        clock = pygame.time.Clock()
+
         while spider_flag:
             for event in pygame.event.get():
                 if event.type == 'QUIT':
@@ -415,7 +440,7 @@ def data_visulization():
                     sys.exit()
 
             if index == -1:
-                clock.tick(30)
+                clock.tick(10)
                 continue
 
             screen.fill(WHITE)
@@ -430,8 +455,13 @@ def data_visulization():
                 # store.update(data[data_date[index]], store.data[0].value)
 
                 if index == max_index:
-                    store.update(data[data_date[max_index - 1]], store.data[0].value)
+                    store.update(data[data_date[index-1]], store.data[0].value)
                 else:
+                    print('数据长度：')
+                    print(len(data))
+                    print('索引值：')
+                    print(index)
+                    # print(spider_flag)
                     store.update(data[data_date[index]], store.data[0].value)
 
             maxv = store.data[0].value
@@ -462,15 +492,19 @@ def data_visulization():
             screen.blit(temp, temp_r)
 
             if index == max_index:
-                bar_graph(screen, (175, 80), data[data_date[max_index - 1]], -1)
-                index = 0
+                bar_graph(screen, (175, 80), data[data_date[max_index - 1]], frame)
+                # print(data[data_date[max_index - 1]])
+                index = -1
                 spider_flag = False
+                print(spider_flag)
             else:
                 bar_graph(screen, (175, 80), data[data_date[index]], frame)
+                # print(data[data_date[index]])
             # bar_graph(screen, (175, 80), data[data_date[index]], frame)
 
             pygame.display.flip()
-            clock.tick(30)
+            # clock.tick(30)
+        clock.tick(10)
 
 
 
